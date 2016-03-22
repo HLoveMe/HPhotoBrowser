@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="HToolView" customModule="PhotoBrowser" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="460" height="44"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vbo-e8-rpc">
+                    <rect key="frame" x="20" y="7" width="30" height="30"/>
+                    <state key="normal" title="预览"/>
+                    <connections>
+                        <action selector="previewClick:" destination="iN0-l3-epB" eventType="touchUpInside" id="XHi-e3-Ubn"/>
+                    </connections>
+                </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="共有35中图片" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lwn-9L-VHg">
+                    <rect key="frame" x="177" y="12" width="106" height="21"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <color key="textColor" red="0.43529411759999997" green="0.4431372549" blue="0.47450980390000003" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hdW-2F-AL2">
+                    <rect key="frame" x="380" y="7" width="60" height="30"/>
+                    <color key="backgroundColor" red="0.48240061040920135" green="1" blue="0.9830115973320781" alpha="1" colorSpace="calibratedRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="30" id="MIY-ca-su4"/>
+                        <constraint firstAttribute="width" constant="60" id="tuV-2t-Udx"/>
+                    </constraints>
+                    <state key="normal" title="确定"/>
+                    <connections>
+                        <action selector="sureClick:" destination="iN0-l3-epB" eventType="touchUpInside" id="qOc-wt-wxc"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="Vbo-e8-rpc" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="20" id="1re-Pt-R1I"/>
+                <constraint firstItem="lwn-9L-VHg" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="7DK-F9-18o"/>
+                <constraint firstItem="hdW-2F-AL2" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="M9I-5w-Pmp"/>
+                <constraint firstItem="lwn-9L-VHg" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="eb6-bq-xPt"/>
+                <constraint firstItem="Vbo-e8-rpc" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="l9E-3K-JEC"/>
+                <constraint firstAttribute="trailing" secondItem="hdW-2F-AL2" secondAttribute="trailing" constant="20" id="tcN-oq-gGw"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="imageCountLab" destination="lwn-9L-VHg" id="VzE-PU-uTJ"/>
+                <outlet property="previewButton" destination="Vbo-e8-rpc" id="BPW-cZ-udu"/>
+                <outlet property="sureButton" destination="hdW-2F-AL2" id="nHM-mp-p8x"/>
+            </connections>
+            <point key="canvasLocation" x="854" y="497"/>
+        </view>
+    </objects>
+</document>
