@@ -19,8 +19,8 @@ class ViewController: UIViewController {
     
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-       self.sheet!.showPreview(self) { (_: [UIImage]) -> () in
-            
+       self.sheet!.showPreview(self) { (images) in
+        print("\(images.count)")
         }
     }
     override func didReceiveMemoryWarning() {

@@ -15,12 +15,12 @@ class photoBrowserController: UIViewController {
     var currentAblum:photoAblum?
     lazy var collectionView:UICollectionView = {
         let flow = UICollectionViewFlowLayout.init()
-        flow.itemSize = CGSizeMake(self.view.width, self.view.height-64)
+        flow.itemSize = CGSizeMake(self.view.width+Mar, self.view.height-64)
         flow.minimumInteritemSpacing = 0
         flow.minimumLineSpacing = 0
         flow.sectionInset =  UIEdgeInsetsMake(0, 0,0, 0)
         flow.scrollDirection = .Horizontal
-        let coll:UICollectionView = UICollectionView.init(frame:CGRectMake(0,0, self.view.width, self.view.height-64), collectionViewLayout: flow)
+        let coll:UICollectionView = UICollectionView.init(frame:CGRectMake(0,0, self.view.width+Mar, self.view.height-64), collectionViewLayout: flow)
         coll.delegate = self
         coll.dataSource = self
         coll.pagingEnabled = true
@@ -47,7 +47,7 @@ extension photoBrowserController:UICollectionViewDataSource,UICollectionViewDele
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell{
         let cell:PhotoBigCell = collectionView.dequeueReusableCellWithReuseIdentifier("PhotoBigCell", forIndexPath: indexPath) as! PhotoBigCell
-        cell.backgroundColor = randomColor()
+        cell.backgroundColor = UIColor.blackColor()
         if let _ = self.currentAblum{
             PhotoUtil.sharedPhotoUtil.getImageFrom(self.currentAblum!.assets![indexPath.row].asset, mode: .None, quality: .hight, expectSize:nil, complement: { (image,_) -> () in
                 cell.image = image

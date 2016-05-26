@@ -8,8 +8,7 @@
 
 import UIKit
 import Photos
-let SelectNotifacaton:String = "SelectNotifacaton"
-var selectedImages:[HAsset] = {[HAsset]()}()
+
 class PreviewSheet:NSObject{
     var maxShowNum:Int = 10
     var maxSelectedCount = 5
@@ -21,7 +20,7 @@ class PreviewSheet:NSObject{
     private lazy var backView:UIButton = {
         let rect  =  CGRectMake(0, screenHeight, screenWidth, screenHeight)
         let backView:UIButton  = UIButton.init(frame:rect)
-        backView.addTarget(self, action: "backViewClick:", forControlEvents: .TouchUpInside)
+        backView.addTarget(self, action: #selector(PreviewSheet.backViewClick(_:)), forControlEvents: .TouchUpInside)
         let sheetView = UIView.init(frame: CGRectMake(0, screenHeight - self.sheetViewHeight, screenWidth, self.sheetViewHeight))
         backView.addSubview(sheetView)
         self.sheetView = sheetView
@@ -29,8 +28,6 @@ class PreviewSheet:NSObject{
     }()
     private lazy var collectionView:UICollectionView =  {
         let flow = UICollectionViewFlowLayout.init()
-        let sc =  screenWidth / screenHeight
-        flow.itemSize = CGSizeMake(sc * self.collectionViewHeight + 15, self.collectionViewHeight - 14)
         flow.minimumLineSpacing = 2
         flow.minimumInteritemSpacing  = 5
         flow.sectionInset = UIEdgeInsetsMake(2, 2, 2, 2)
@@ -43,6 +40,7 @@ class PreviewSheet:NSObject{
         coll.registerNib(UINib.init(nibName: "HPhotoCell", bundle: NSBundle.mainBundle()), forCellWithReuseIdentifier: "HPhotoCell")
         return coll
     }()
+    private var  sureButton:UIButton!
     private lazy var stackView:UIStackView = {
         let rect = CGRectMake(0, self.collectionViewHeight-8, screenWidth, self.sheetViewHeight - self.collectionViewHeight + 6)
         let one:UIStackView = UIStackView.init(frame: rect)
@@ -54,17 +52,18 @@ class PreviewSheet:NSObject{
         takePic.backgroundColor = UIColor.whiteColor()
         takePic.setTitleColor(UIColor.blackColor(), forState: .Normal)
         takePic.setTitle("拍照", forState: .Normal)
-        takePic.addTarget(self, action: "takePhoto:", forControlEvents: .TouchUpInside)
+        takePic.addTarget(self, action: #selector(PreviewSheet.takePhoto(_:)), forControlEvents: .TouchUpInside)
         let photoButton = UIButton.init()
         photoButton.backgroundColor = UIColor.whiteColor()
         photoButton.setTitleColor(UIColor.blackColor(), forState: .Normal)
         photoButton.setTitle("相册", forState: .Normal)
-        photoButton.addTarget(self, action: "scanAllAlbum:", forControlEvents: .TouchUpInside)
+        photoButton.addTarget(self, action: #selector(PreviewSheet.scanAllAlbum(_:)), forControlEvents: .TouchUpInside)
+        self.sureButton = photoButton
         let cancel = UIButton.init()
         cancel.backgroundColor = UIColor.whiteColor()
         cancel.setTitleColor(UIColor.blackColor(), forState: .Normal)
         cancel.setTitle("取消", forState: .Normal)
-        cancel.addTarget(self, action: "backViewClick:", forControlEvents: .TouchUpInside)
+        cancel.addTarget(self, action: #selector(PreviewSheet.backViewClick(_:)), forControlEvents: .TouchUpInside)
         one.addArrangedSubview(takePic)
         one.addArrangedSubview(photoButton)
         one.addArrangedSubview(cancel)
@@ -79,9 +78,13 @@ class PreviewSheet:NSObject{
     
     typealias Block = ([UIImage])->()
     
+     override init() {
+       super.init()
+       NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(PreviewSheet.SelectImageNotifacaton(_:)), name: SelectNotifacaton, object: nil)
+    }
     
     func showPreview(sender:UIViewController,block:Block)->PreviewSheet{
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "SelectImageNotifacaton:", name: SelectNotifacaton, object: nil)
+        selectedImages.removeAll()
         self.currentViewController = sender
         self.block = block
         if(!PhotoUtil.isauthorityForLibary()){
@@ -92,6 +95,7 @@ class PreviewSheet:NSObject{
         self.RecentlyAblum = PhotoUtil.sharedPhotoUtil.getCameraRollAblum()
         self.initSubViews()
         self.show()
+        self.collectionView.reloadData()
         return self
     }
     func SelectImageNotifacaton(notifacation:NSNotification){
@@ -104,28 +108,60 @@ class PreviewSheet:NSObject{
         if (IDs.contains(one.ID)){
             selectedImages.removeAtIndex(selectedImages.indexOf(one)!)
             button.selected = false
+            if selectedImages.count == 0 {
+                self.sureButton.removeTarget(self, action: #selector(PreviewSheet.sureSelected), forControlEvents:.TouchUpInside)
+                sureButton.setTitle("相册", forState: .Normal)
+                sureButton.addTarget(self, action: #selector(PreviewSheet.scanAllAlbum(_:)), forControlEvents: .TouchUpInside)
+            }
         }else{
             if(selectedImages.count < self.maxSelectedCount){
                 selectedImages.append(one)
                 button.selected = true
+                let content =  "确定(" + "\(selectedImages.count)" + ")"
+                sureButton.setTitle(content, forState: .Normal)
+                if selectedImages.count==1 {
+                    sureButton.removeTarget(self, action: #selector(PreviewSheet.scanAllAlbum(_:)), forControlEvents:.TouchUpInside)
+                    sureButton.addTarget(self, action: #selector(PreviewSheet.sureSelected), forControlEvents: .TouchUpInside)
+                }
+                
             }else{
                 button.selected = false
             }
         }
     }
+    func sureSelected()->(){
+        if selectedImages.count==0 {return}
+        var imags:[UIImage] = [UIImage]()
+        for one in selectedImages{
+            PhotoUtil.sharedPhotoUtil.getImageFrom(one.asset, mode: .None, quality: .medium, expectSize: nil, complement: { (oneImage, _) in
+                imags.append(oneImage!)
+            })
+        }
+        guard let _ = block else {return}
+        self.backViewClick(backView)
+        self.block!(imags)
+    }
+    deinit{
+        NSNotificationCenter.defaultCenter().removeObserver(self)
+    }
 }
+
+let SelectNotifacaton:String = "SelectNotifacaton"
+var selectedImages:[HAsset] = {[HAsset]()}()
 extension PreviewSheet{
     func showMessage(title:String,message:String){
         let alert = UIAlertController.init(title:title, message: message, preferredStyle: .Alert)
         let one = UIAlertAction.init(title: "确定", style: .Cancel, handler: nil)
         alert.addAction(one)
         self.currentViewController?.presentViewController(alert, animated: true, completion: nil)
-        print("\(alert)")
     }
     func initSubViews(){
         self.currentViewController?.view.addSubview(self.backView)
         self.sheetView.addSubview(self.collectionView)
         self.sheetView.addSubview(self.stackView)
+        self.sureButton.removeTarget(self, action: #selector(PreviewSheet.sureSelected), forControlEvents:.TouchUpInside)
+        sureButton.setTitle("相册", forState: .Normal)
+        sureButton.addTarget(self, action: #selector(PreviewSheet.scanAllAlbum(_:)), forControlEvents: .TouchUpInside)
     }
     
     func show(){
@@ -144,6 +180,7 @@ extension PreviewSheet{
             }) { (_) -> Void in
                 self.backView.removeFromSuperview()
         }
+        
     }
     func takePhoto(sender:UIButton){
         self.imagePicker.sourceType = .Camera
@@ -156,8 +193,15 @@ extension PreviewSheet{
         let targer:UINavigationController = UINavigationController.init(rootViewController: photosViewController())
         self.currentViewController?.presentViewController(targer, animated: true, completion: nil)
     }
+    
 }
-extension PreviewSheet:UICollectionViewDataSource,UICollectionViewDelegate{
+extension PreviewSheet:UICollectionViewDataSource,UICollectionViewDelegate,UICollectionViewDelegateFlowLayout{
+    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize{
+        let assset = self.RecentlyAblum!.assets![self.RecentlyAblum!.imageCount-indexPath.row-1]
+        let thumbHeight:CGFloat = self.collectionViewHeight - 14
+        let thumbwidth:CGFloat=CGFloat(assset.asset.pixelWidth) / CGFloat(assset.asset.pixelHeight) * thumbHeight
+        return CGSizeMake(thumbwidth,thumbHeight)
+    }
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int{
         if  self.RecentlyAblum?.imageCount > 0{
             return self.RecentlyAblum!.imageCount >= maxShowNum ?maxShowNum : self.RecentlyAblum!.imageCount
@@ -167,7 +211,7 @@ extension PreviewSheet:UICollectionViewDataSource,UICollectionViewDelegate{
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell{
         let cell:HPhotoCell = collectionView.dequeueReusableCellWithReuseIdentifier("HPhotoCell", forIndexPath: indexPath) as! HPhotoCell
-        cell.backgroundColor = randomColor()
+//        cell.backgroundColor = randomColor()
         let assset = self.RecentlyAblum!.assets![self.RecentlyAblum!.imageCount-indexPath.row-1]
         cell.asset = assset
         return cell
@@ -185,6 +229,7 @@ extension PreviewSheet:UINavigationControllerDelegate,UIImagePickerControllerDel
     }
     
 }
+//相册改变
 extension PreviewSheet:PHPhotoLibraryChangeObserver{
     func photoLibraryDidChange(changeInstance: PHChange){
         if(PhotoUtil.isauthorityForLibary()){

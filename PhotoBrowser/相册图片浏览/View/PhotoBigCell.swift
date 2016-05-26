@@ -8,6 +8,9 @@
 
 import UIKit
 
+var Mar:CGFloat = 12
+
+
 class PhotoBigCell: UICollectionViewCell {
     lazy var imageV:UIImageView = {UIImageView()}()
     var image:UIImage?{
@@ -23,7 +26,8 @@ class PhotoBigCell: UICollectionViewCell {
     }
     override func layoutSubviews() {
         super.layoutSubviews()
-        self.imageV.frame = self.bounds
+        let rect:CGRect = self.bounds
+        self.imageV.frame = CGRectMake(rect.origin.x, rect.origin.y, rect.width-Mar, rect.height)
     }
    required init?(coder aDecoder: NSCoder) {
        fatalError("init(coder:) has not been implemented")
